@@ -1,0 +1,114 @@
+<style>
+    .cell {
+        display: inline-block;
+        width: 6px;
+        border-right: 1px solid white;
+        border-top: 1px solid white;
+        height: 6px;
+        background: gray;
+        vertical-align: middle;
+        shape-rendering: crispEdges; 
+    }
+    #container {
+        width: 702px;
+    }
+    </style>
+    
+    <div id="container"></div>
+    
+    <button onclick="localStorage['map'] = JSON.stringify(map)">save</button>
+    
+    <script>
+    let map = localStorage['map'] ? JSON.parse(localStorage["map"]) : Array(10000).fill(0)
+    
+    let container = document.getElementById("container")
+    for (let y = 0; y < 100; y++) {
+        for (let x = 0; x < 100; x++) {
+            let cell = document.createElement('DIV');
+            cell.classList.add('cell')
+    
+            if(map[100*y + x] == 1) {
+                cell.style.backgroundColor = "black"
+            }
+            cell.addEventListener("mousemove", () => {
+                if(mousedown) {
+                    if(clear) {
+                        cell.style.backgroundColor = ""
+                        map[100*y + x] = 0
+                    } else {
+                        cell.style.backgroundColor = "black";
+                        map[100*y +x] = 1
+                    }
+                }
+            })
+            container.appendChild(cell)
+        }
+    }
+    
+    let mousedown = false
+    let clear = false
+    document.addEventListener("mousedown", e => {
+        mousedown = true
+        clear = (e.which === 3)
+    })
+    document.addEventListener("mouseup", () => {
+        mousedown = false
+    })
+    document.addEventListener("contextmenu", e => {
+        e.preventDefault();
+    })
+    function sleep(t) {
+        return new Promise(function(resolve) {
+            setTimeout(resolve, t)
+        })
+    }
+    async function findPath(map, start, end) {
+        // debugger
+        let table = [].concat(map)
+        var queue = [start]
+        // push shift 队列
+        // pop unshift 队列
+        // push pop 栈
+        async function insert(x, y, pre) {
+            if (x < 0 || x >= 100 || y < 0 || y >= 100) {
+                return;
+            }
+            if (table[y*100 + x]) {
+                return;
+            }
+            container.children[100*y + x].style.backgroundColor = "lightgreen";
+            table[y*100 + x] = pre;
+            queue.push([x, y])
+
+        }
+        while(queue.length) {
+            let [x, y] = queue.shift()
+            if(x === end[0] && y === end[1]) {
+                let path = [];
+                //debugger
+
+                while (x != start[0] || y != start[1]) {
+                    path.push(map[y*100 + x])
+                    let ins = table[y*100 + x]
+                    x = ins[0]
+                    y = ins[1]
+                    container.children[y*100 + x].style.backgroundColor = "purple"
+                    await sleep(1);
+                }
+                console.log(path)
+                return path
+            }
+            await insert(x - 1, y, [x, y])
+            await insert(x, y - 1, [x, y])
+            await insert(x + 1, y, [x, y])
+            await insert(x, y + 1, [x, y])
+
+            await insert(x - 1, y + 1, [x, y])
+            await insert(x + 1, y - 1, [x, y])
+            await insert(x - 1, y - 1, [x, y])
+            await insert(x + 1 , y + 1, [x, y])
+
+        }
+        return null
+    }
+    </script>

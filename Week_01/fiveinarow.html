@@ -1,0 +1,313 @@
+<style>
+     .cell {
+            width: 40px;
+            height: 40px;
+            display: inline-block;
+            background-color: green;
+            border: 1px solid white;
+            vertical-align: middle;
+            font-size: 20px;
+            line-height: 40px;
+            text-align: center;
+            color: red;
+        }
+</style>
+
+<div id='play-board'></div>
+
+<script>
+    let pattern = [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ]
+    let color = 1
+    drawBoard()
+    // check(pattern, color)
+    computerMove()
+    function drawBoard() {
+        // console.log(pattern)
+        let board = document.getElementById('play-board')
+        board.innerHTML = ''
+        for(let i = 0; i < 15;i++) {
+            for(let j = 0; j< 15;j++) {
+                let cell = document.createElement("div")
+                cell.classList.add("cell")
+                cell.innerText = pattern[i * 15 + j] == 2? "X": pattern[i + 15 * j] == 1? "O": ""
+                cell.addEventListener("click",() => userMove(i + j*15))
+                board.appendChild(cell)
+            }
+            board.appendChild(document.createElement("br"))
+        }
+    }
+    function move(i) {
+        if (pattern[i] === 0) {
+            pattern[i] = color
+            if(check(pattern, color)) {
+                alert( color == 2 ? '⭕️ is win' : '✖ is win')
+            }
+            color = 3 - color
+            // console.log(bestChoice(pattern, color))
+            drawBoard()
+        }
+    }
+    function userMove (p) {
+        // console.log(p)
+        if (pattern[p] == 0) {
+            pattern[p] = color
+            if (check(pattern, color)) {
+                alert( color == 2 ? '⭕️ is win' : '✖ is win')
+            }
+            color = 3 - color
+            drawBoard()
+            //computerMove()
+        }
+    }
+    function computerMove () {
+        // debugger
+        let choise = bestChoice(pattern, color)
+        /* console.log(choise.point)
+        console.log(color) */
+        console.log('choise.point',choise.point)
+        if (choise.point !== null) {
+            pattern[choise.point] = color
+        }
+        drawBoard()
+        // console.log(check(pattern, color))
+        if (check(pattern, color)) {
+            alert( color == 2 ? '⭕️ is win' : '✖ is win')
+        }
+        color = 3 - color
+    }
+    function check(pattern, color) {
+        let win = false
+        outer: for (let i = 0; i < 15; i++) {
+            for (let j = 0; j < 15; j++) {
+                let point = pattern[i + j * 15]
+                if (point == color) {
+                    // case1 horizontal Left
+                    if (i > 4) {
+                        if(!win)
+                            for ( let a = 4; a > 0; a-- ) {
+                                let l_v_point = pattern[i - a, j] == color
+                                if (l_v_point) {
+                                    if (a == 1) {
+                                        // console.log('case1')
+                                        win = true
+                                        break outer
+                                    }
+                                    continue
+                                } else {
+                                    break
+                                }
+                            }
+                    }
+                    // case2 horizontal right
+                    if (i < 12) {
+                        if(!win)
+                            for ( let a = 4; a > 0; a-- ) {
+                                // debugger
+                                // console.log(pattern[i + a + 15*j],color, i + a, j)
+                                let r_v_point = pattern[i + a + 15*j] == color
+                                if (r_v_point) {
+                                    if (a == 1) {
+                                        // console.log('case2')
+                                        win = true
+                                        break outer
+                                    }
+                                    continue
+                                } else {
+                                    break
+                                }
+                            }
+                    }
+                    // case3 vertical line
+                    if (j > 4) {
+                        if(!win)
+                            for ( let a = 4; a > 0; a-- ) {
+                                let r_v_point = pattern[i + 15*(j - a)] == color
+                                if (r_v_point) {
+                                    if (a == 1) {
+                                        // console.log('case3')
+                                        win = true
+                                        break outer
+                                    }
+                                    continue
+                                } else {
+                                    break
+                                }
+                            }
+                    }
+                    // case4 vertical line
+                    if (j < 12) {
+                        if(!win)
+                            for ( let a = 4; a > 0; a-- ) {
+                                let r_v_point = pattern[i + 15*(j + a)] == color
+                                if (r_v_point) {
+                                    if (a == 1) {
+                                        // console.log('case4')
+                                        win = true
+                                        break outer
+                                    }
+                                    continue
+                                } else {
+                                    break
+                                }
+                            }
+                    }
+                    // case5 oblique line l_u
+                    if (j > 4 && i > 4) {
+                        if(!win)
+                            for ( let a = 4; a > 0; a-- ) {
+                                let r_v_point = pattern[i - a + 15*(j - a)] == color
+                                if (r_v_point) {
+                                    if (a == 1) {
+                                        // console.log('case5')
+                                        win = true
+                                        break outer
+                                    }
+                                    continue
+                                } else {
+                                    break
+                                }
+                            }
+                    }
+                    // case6 oblique line r_u
+                    if (j > 4 && i < 12) {
+                        if(!win)
+                            for ( let a = 4; a > 0; a-- ) {
+                                let r_v_point = pattern[i + a + 15*(j - a)] == color
+                                if (r_v_point) {
+                                    if (a == 1) {
+                                        // console.log('case6')
+                                        win = true
+                                        break outer
+                                    }
+                                    continue
+                                } else {
+                                    break
+                                }
+                            }
+                    }
+                    // case7 oblique line l_d
+                    if (j > 12 && i < 4) {
+                        if(!win)
+                            for ( let a = 4; a > 0; a-- ) {
+                                let r_v_point = pattern[i - a + 15*(j + a)] == color
+                                if (r_v_point) {
+                                    if (a == 1) {
+                                        win = true
+                                        break outer
+                                    }
+                                    continue
+                                } else {
+                                    break
+                                }
+                            }
+                    }
+                    // case8 oblique line r_d
+                    if (j < 12 && i < 12) {
+                        if(!win)
+                            for ( let a = 4; a > 0; a-- ) {
+                                let r_v_point = pattern[i + a + 15*(j + a)] == color
+                                if (r_v_point) {
+                                    if (a == 1) {
+                                        win = true
+                                        break outer
+                                    }
+                                    continue
+                                } else {
+                                    break
+                                }
+                            }
+                    }
+                }
+            }
+        }
+        // alert('win', win, color)
+        return win
+    }
+
+    function clone (arr) {
+        return [].concat(arr)
+        // return Object.create(arr)
+    }
+    function willWin(pattern, color) {
+        // debugger
+        for(let i=0; i < 15 * 15; i++) {
+            if (pattern[i]) {
+                continue
+            }
+            let temp = clone(pattern)
+            temp[i] = color
+            if (check(temp, color)) {
+                console.log('i',i)
+                return i
+            }
+        }
+        return null
+    }
+    function bestChoice(pattern, color, deepth = 0) {
+        let point = willWin(pattern, color);
+        if (point) {
+            return {
+                point: point,
+                result: 1
+            }
+        }
+        let result = -1;
+        if (deepth > 2) {
+            return 0
+        }
+        outer: for (let i = 0; i < 15; i++) {
+            for (let j = 0; j < 15; j++) {
+                if (pattern[i * 15 + j] == 0) {
+                    continue
+                }
+                let temp = clone(pattern)
+                temp[i * 15 + j] = color
+                let opp = bestChoice(temp, 3 -color, deepth + 1)
+                if (-opp.result >= result) {
+                    point = i * 15 + j;
+                    result = -opp.result
+                }
+                if (result == 1)
+                    break outer
+            }
+        }
+        /* for(let i = 0; i < 9; i++) {
+            if (pattern[i] != 0) {
+                continue
+            }
+            let temp = clone(pattern)
+            // console.log('temp',temp)
+            temp[i] = color
+            let r = bestChoice(temp, 3-color).result
+            // console.log(temp, 3-color, r)
+            if(-r > result) {
+                result = -r
+                point = i
+            }
+            if (result == 1)
+                break
+        } */
+        return {
+            point: point,
+            result: point ? result : 0
+        }
+    }
+
+
+</script>
