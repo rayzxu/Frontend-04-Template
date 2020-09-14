@@ -1,0 +1,97 @@
+<input id="r" type="range" min=0 max=255>
+<input id="g" type="range" min=0 max=255>
+<input id="b" type="range" min=0 max=255>
+<div id="color" style="height: 100px; width: 100px">
+
+</div>
+
+<script>
+    let callbacks = new Map()
+    let reactivities = new Map()
+
+    let usedReactivities = []
+
+    let object = {
+        r: 100,
+        g: 1,
+        b: 1,
+        a: {
+            b: 0
+        }
+    }
+
+    let po = reactive(object)
+
+    effect(() => {
+        // console.log(document.getElementById('r'))
+        document.getElementById('r').value = po.r
+    })
+    effect(() => {
+        document.getElementById('g').value = po.g
+        console.log(po.g)
+    })
+    effect(() => {
+        document.getElementById('b').value = po.b
+        console.log(po.b)
+    })
+
+    document.getElementById("r").addEventListener("input", event => po.r = event.target.value)
+    document.getElementById("g").addEventListener("input", event => po.g = event.target.value)
+    document.getElementById("b").addEventListener("input", event => po.b = event.target.value)
+
+    effect(() => {
+        document.getElementById('color').style.backgroundColor = `rgb(${po.r}, ${po.g}, ${po.b})`
+        console.log(document.getElementById('color').style.backgroundColor)
+    })
+
+    function effect(callback) {
+        // callbacks.push(callback)
+        usedReactivities = []
+        callback();
+        // console.log(usedReactivities) // usedReactivities 二维数组
+        for (let reactivity of usedReactivities) {
+            console.log('reactivity', reactivity)
+            if (!callbacks.has(reactivity[0])) {
+                callbacks.set(reactivity[0], new Map()) // map 里面也可以 添加map 学到了
+            } // 第一层
+            if (!callbacks.get(reactivity[0]).has(reactivity[1])) {
+                callbacks.get(reactivity[0]).set(reactivity[1], []) // new Map()
+            }// 第二层
+
+            callbacks.get(reactivity[0]).get(reactivity[1]).push(callback); //依赖收集
+        }
+    }
+
+    function reactive(object) {
+        console.log('reactivities.has(object)', reactivities.has(object))
+        if(reactivities.has(object))
+            return reactivities.get(object);
+
+        let proxy = new Proxy(object, {
+            set(obj, prop, val) {
+                obj[prop] = val;
+                if(callbacks.get(obj)) {
+                    if(callbacks.get(obj).get(prop)) {
+                        for(let callback of callbacks.get(obj).get(prop)) {
+                            console.log(callback, callbacks)
+                            callback();
+                        }
+                    }
+                }
+                return obj[prop]
+            },
+            get(obj, prop) {
+                console.log(obj, prop)
+                usedReactivities.push([obj, prop])
+                if(typeof obj[prop] === 'object') {
+                    return reactive(obj[prop])
+                }
+                return obj[prop]
+            }
+        })
+        console.log(proxy)
+        reactivities.set(object, proxy)
+
+        return proxy; 
+    }
+</script>

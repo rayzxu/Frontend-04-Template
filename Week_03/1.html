@@ -1,0 +1,47 @@
+<script>
+    let $ = Symbol("$")
+    class Trie {
+        constructor () {
+            this.root = Object.create(null)
+        }
+        insert(word) {
+            let node = this.root;
+            for (let c of word) { // 判断字母c是否存在root树内
+                if (!node[c])
+                    node[c] = Object.create(null) // 如果字母c不存在此支内 创建新节点
+                node = node[c] // 下一个for循环时改变node节点/
+            }
+            if(!($ in node)) {
+                node[$] = 0
+            }
+            node[$]++
+        }
+        most() {
+            let max = 0
+            let maxWord = null;
+            let visit = (node, word) => {
+                if(node[$] && node[$] > max) { // 寻找最大终止符计数
+                    max = node.$
+                    maxWord = word
+                }
+                for (let p in node) { // in 树名 // array下角标？
+                    visit(node[p], word + p); // word 拼接 追加当前树的名字
+                }
+            }
+            visit(this.root, "")
+            console.log(maxWord)
+        }
+    }
+    function randomWord(length) {
+        var s = ''
+        for(let i = 0; i < length; i++) {
+            s += String.fromCharCode(Math.random() * 26 + "a".charCodeAt(0))
+        }
+        return s
+    }
+    let trie = new Trie();
+
+    for(let i = 0; i < 30; i++) {
+        trie.insert(randomWord(4));
+    }
+</script>
