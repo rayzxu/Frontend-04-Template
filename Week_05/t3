@@ -1,0 +1,12 @@
+Grammer
+    简单语句
+    组合语句
+    声明
+Runtime
+    complication record：语句运行结构记录
+    lexical Environment：运行环境 执行期上下文
+
+complication record 运行结果记录 参与js计算 但无法访问
+    [[type]]: normal,break,continue,return, throw
+    [[value]]: 基础类型
+    [[target]]: label 表达式前的label 可用于定位

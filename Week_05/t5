@@ -1,0 +1,40 @@
+声明
+    functionDeclaration: 一般 * generator async 异步 两个都加 异步产生器
+    verbalDeclaration: var
+    LexicalDeclaration: const、let 、class
+
+function
+function *
+async function
+async function *
+var // 两部分 var声明 var赋值
+    没有先后关系、所有的声明都被视为在script中的第一行被声明 // 变量提升
+
+class
+const
+let
+    在声明前访问 会抛错
+
+预处理：所有的声明都有预处理机制 可以把变量变为一个局部变量
+    var a = 2
+    void function() {
+        a = 1; // a 修改的为function内部的var a
+        console.log(a) // 1
+        return;
+        var a;
+    }();
+    console.log(a) // 2
+
+    var a = 2
+    void function() {
+        a = 1; // a 修改的为function内部的var a
+        console.log(a) // 1
+        return;
+        const a; // 局部变量 执行抛错
+    }();
+    console.log(a) // 2
+
+    // try catch 无法捕获 const 声明错误
+
+作用域：{} 可以生成作用域
+    const 在循环语句内使用const 其作用域为整个循环语句 因为循环语句不会产生新的作用域

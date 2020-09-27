@@ -1,0 +1,32 @@
+简单语句：语句内部不包含其他语句
+    expressionStatement: 一般语句
+    EmptyStatement: ;;;; 分号空语句 无意义
+    DebuggerStatement: debugger断点
+    // 流程控制语句 4个
+    ThrowStatement: throwError 抛出异常
+    ContinueStatement: 循环语句 结束当次循环 后面循环继续 // forEach不适用
+    BreakStatement: 循环语句 结束循环 可以使用label跳到指定位置
+    RetrunStatement: return
+    // 其他
+    yield： generator 结构化？？
+
+复合语句：
+    BlockStatement: {}花括号 可以形成块级作用域 // 完成树桩结构
+    IfStatement: 条件语句
+    SwitchStatement: 多条件语句
+    IterationStatement: 循环 while、 do while、 for、 for await
+    WithStatement: with 打开对象 把对象属性放进作用域里面 可以节约空间 不建议使用
+    LabelStatement: IterationStatement、break continue 语句拿到complication record之后 可以跳到指定label语句位置
+    TryStatement: try catch finally finally无关结果 必定执行
+
+BlockStatement：
+    [[type]]: normal // 返回值
+    [[valie]]: --
+    [[target]]: --
+
+IterationStatement:
+    while(表达式) statement
+    do statement while(表达式) // 至少执行一次
+    for (i, limit, action) statement
+    for in
+    for of

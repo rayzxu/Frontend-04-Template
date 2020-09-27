@@ -1,0 +1,33 @@
+JS函数调用；
+    stack是从左到右执行的栈结构 每个栈中所保存的是当前栈的
+    当栈执行到栈顶元素时 栈顶元素是我们当前所能访问到的所有变量 runing execution context 执行期上下文
+
+    执行期上下文：
+        code evaluation state：用于async 和 generator函数用来保存执行结果（代码执行到哪）
+        Function：function
+        script or module：script module
+        generator：generator函数创建的执行期上下文
+        realm：保存所有内置对象的空间
+        lexcialEnvironment：保存变量的环境 保存this、super、new.target、变量等信息
+        VariableEnvironment：var声明
+
+    environment record:
+        Global Environment Records
+        Object Environment Records
+        Declarative Environment Records
+            Funciton Environment Records
+            moudle Environment Records
+闭包：
+    按照定义闭包分为两部分 1 environment record 2 code
+    environment records 可以形成链式结构 （scope chain）
+
+Realm: 记录原型的空间
+    在js中，函数表达式和对象直接量均会创建对象
+    使用 . 做隐式转换也会创建对象
+    这些对象都是有原型的，如果没有realm，就不知道他们的原型是什么。
+
+    在js引擎的实例里面：所有的内置对象都会被放入一个realm里面
+    在不同realm实例之间，他们是相互独立的
+
+    var x = {} //创建了一个Object对象
+    1.toString() // 装箱产生Number对象

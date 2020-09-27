@@ -1,0 +1,106 @@
+字符串和数字相加
+数字 =》 字符串
+
+== 类型不同 都尝试转为number在类型比较
+
+‘ ’ == false （true）
+0 == false （true）
+
+位运算：转为number类型 然后再转为整数类型
+字符串 空字符串 false 其他string true
+bool 转number true 转 1 false 转 0
+
+非0字符串 转true true 转1 空字符串 转false false 转 0
+
+null 转 number 0 所以 null == false
+
+Object == true
+
+umboxing 拆箱转换
+toPremitive：object + object \ object 参与运算 时调用
+    toString 方法
+    valueOf 方法
+    symbol 的 ToPreimitive 如果定义了symbol的toP 则会忽略toS valueOf
+
+    eg：var o = {
+        toString() {return 2}
+        valueOf() {return 1}
+        [Symbol].toPremitive() {return 3}
+    }
+
+    加法 优先调用valueOf ‘x’ + o 优先调用 [Symbol].toPremitive()，其次valueOf 再次valueOf()
+    当o为属性名时 则会优先调用toString方法 例子：x[o]=1 则 'x' + o === 'x1' (没有[Symbol].toPremitive()的情况下)
+拆箱总结
+    转number一定先转valueOf
+    一定调用string的情况下则先转toString 
+
+装箱转换：boxing
+
+练习：
+// 四种类型 0b、0B 二进制, 0o、0O 八进制, 0x、0X 十六进制
+StringToNumber(string) {
+  if(typeof string !== 'string') {
+    throw new Error('not a string')
+  }
+  let length = string.length
+  if (length == 0) {
+    throw new Error('not none')
+  }
+  // ['0b', '0o', '0x']
+  let result
+  let numberString = string.slice(1,length)
+  string = string.toLowerCase()
+  switch(string.slice(0,1)) {
+    case '0b':
+      result = parseInt(numberString, 2)
+      if (typeof result == 'number') {
+        return result
+      } else {
+        throw new Error('not a number')
+      }
+      break;
+    case '0o':
+      result = parseInt(numberString, 8)
+      if (typeof result == 'number') {
+        return result
+      } else {
+        throw new Error('not a number')
+      }
+      break;
+    case '0x':
+      result = parseInt(numberString, 16)
+      if (typeof result == 'number') {
+        return result
+      } else {
+        throw new Error('not a number')
+      }
+      break;
+    default: 
+      result = parseInt(numberString)
+      if (typeof result == 'number') {
+        return result
+      } else {
+        throw new Error('not a number')
+      }
+  }
+}
+
+
+NumberToString(number, binary) {
+  if (typeof number !== 'number') {
+    throw new Error('not a number')
+  }
+  switch(binary) {
+    case '0b':
+      return number.toString(2)
+      break;
+    case '0o':
+      return number.toString(8)
+      break;
+    case '0x':
+      return number.toString(16)
+      break;
+    default:
+      return number.toString()
+  }
+}
