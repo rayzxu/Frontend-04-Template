@@ -1,0 +1,53 @@
+//每个状态对应一个状态机
+function match(string) {
+    let state = start;
+    for(let c of string) {
+        state = state(c)
+    }
+    return state === end
+}
+
+function start(c) {
+    if(c === 'a') {
+        retrun foundA
+    } else {
+        return start(c)
+    }
+}
+
+function foundA(c) {
+    if(c === 'b') {
+        retrun foundB
+    } else {
+        return start(c)
+    }
+}
+
+function foundB(c) {
+    if(c === 'c') {
+        retrun foundC
+    } else {
+        return start(c) //把当前状态交给start去处理 而不是略过当前字符去找下一个 //状态机 reConsume 
+    }
+}
+
+function foundC(c) {
+    if(c === 'd') {
+        retrun foundD
+    } else {
+        return start(c)
+    }
+}
+////
+////
+function foundE(c) {
+    if(c === 'f') {
+        return end
+    } else {
+        return start(c)
+    }
+}
+
+function end(c) {
+    return end //end 状态永远返回end 这样就形成了一个trap状态
+}

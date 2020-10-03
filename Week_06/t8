@@ -1,0 +1,21 @@
+七层网络模型
+应用        ----------
+表示        HTTP        require('http') 对应http包
+会话        __________
+传输        TCP         require('net') 对应一个net包
+网络        internet
+数据链路     ---------
+物理层       3g/4g/5g
+
+TCP/IP基础知识 //全双工通道
+流      没有明显分割单位 只保证前后顺序是正确的
+端口    
+require（‘net’）
+包
+IP地址
+libnet/libpcap c++的底层库 libnet负责构造IP包并发送 libpcap负责从网卡抓取所有的流经本机网卡的IP包 // IP层的基础库
+
+HTTP：
+    requset:
+        文本型协议 : requset line, headers(结束以空格行为标志),body（由content type决定） http里的换行符 是由 /r/n两个字符组成的换行换行符
+    response：

@@ -1,0 +1,6 @@
+浏览器工作原理总论
+浏览器工作步骤：5步
+    url(http) -> HTML(parse) -> DOM (css computing) -> DOM with css (layout) -> DOM with position(render) -> bitmap
+    1 http 请求 解析http回应 取出url中包含的html
+    2. html 变成dom树
+    3. css计算 css叠加 覆盖 继承 计算最终的computed css 然后获得一颗带样式的DOM树
