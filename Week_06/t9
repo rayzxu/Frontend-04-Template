@@ -1,1 +1,31 @@
 设计：从使用设计它的接口模式
+    设计一个http请求的类：
+        content-type 是一个必要的字段，要有默认值
+        body 是kv 格式
+        不同的content-type影响body的格式
+        constent length
+
+    send 函数总结
+        在request的构造器中收集必要的信息
+        设计一个send函数，把请求真实发送到服务器
+        send函数是异步的
+        response格式
+            HTTP/1.1 200 OK //status line //HTTP协议版本号 http状态吗 http状态文本
+            Content-Type: text/html                     ----------
+            Date: Mon, 23 Dec 2019 06:46:19 GMT         HTTP headers
+            Content: keep-alive
+            Transfer-Encoding: chunked                  ----------
+                                        // 空行分隔后面是 body
+            26      // 十六进制
+            <html><body>hello world</body></html> // 内容
+            0       // 十六进制
+
+第三步：发送请求
+    设计支持已有的connection或自己新建connection
+    收到数据传给parser
+    根据parser的状态去resolve Promise
+
+第四步：response Parser
+    response必须分段构造，所以要用一个ResponseParser来装配
+    ResponseParser分段处理ResponseTest，我们要用状态机来分析文本结构
+    
