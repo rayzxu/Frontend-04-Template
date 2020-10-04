@@ -75,6 +75,15 @@ class ResponseParser {
     get ifFinished () {
         return this.bodyParser && this.bodyParser.isFinished
     }
+    get response() {
+        this.statusLine.match(/HTTP\/1.1 ([0-9]+) ([\s\S]+)/);
+        return {
+            statusCode: RegExp.$1,
+            statusText: RegExp.$2,
+            headers: this.headers,
+            body: this.bodyParser.content.join('')
+        }
+    }
     receive(string) {
         console.log('receive ',string)
         for(let i = 0; i < string.length; i++) {

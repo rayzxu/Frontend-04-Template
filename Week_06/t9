@@ -28,4 +28,7 @@
 第四步：response Parser
     response必须分段构造，所以要用一个ResponseParser来装配
     ResponseParser分段处理ResponseTest，我们要用状态机来分析文本结构
-    
+
+第五步：BodyParser
+    Response的body可能根据Content-Type有不同的结构，因此我们会采取子Parse的结构来解决问题 // 子状态机
+    以TrunkedBodyParser为例，我们可以使用状态机来处理body的格式 // 状态机与正则在应用场景的区别，状态机可在读取过程中根据上下文更改内容
