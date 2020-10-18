@@ -1,32 +1,113 @@
-const css = require('css')
+const css = require('css');
 
-const EOF = Symbol("EOF");
+let currentToken = null;
+let currentAttribute = null;
 
-let currentToken = null
+let stack = [{ type: "document", children: [] }]
+let currentTextNode = null;
 
-let currentAttribute = null
-
-let currentTextNode = null
-
-let stack = [{ type: 'document', children: [] }]
-
-let rules = []
+//加入一个新的函数，addCSSRules，这里我们把css规则暂存到一个数组里
+let rules = [];
 function addCSSRules(text) {
     var ast = css.parse(text);
-    console.log(JSON.stringify(ast, null, '    '))
     rules.push(...ast.stylesheet.rules);
 }
 
+function match(element, selector) {
+    if (!selector || !element.attributes) {
+        return false;
+    }
+
+    if (selector.charAt(0) == "#") {
+        var attr = element.attributes.filter(attr => attr.name === "id")[0];
+        if (attr && attr.value === selector.replace("#", '')) {
+            return true;
+        }
+    } else if (selector.charAt(0) == ".") {
+        var attr = element.attributes.filter(attr => attr.name === "class")[0];
+        if (attr && attr.value === selector.replace(".", '')) {
+            return true;
+        }
+    } else {
+        if (element.tagName === selector) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function specificity(selector) {
+    var p = [0, 0, 0, 0];
+    var selectorParts = selector.split(" ");
+    for (var part of selectorParts) {
+        if (part.charAt(0) == "#") {
+            p[1] += 1;
+        } else if (part.charAt(0) == ".") {
+            p[2] += 1;
+        } else {
+            p[3] += 1;
+        }
+    }
+    return p;
+}
+
+function compare(sp1, sp2) {
+    if (sp1[0] - sp2[0]) {
+        return sp1[0] - sp2[0]
+    }
+    if (sp1[1] - sp2[1]) {
+        return sp1[1] - sp2[1]
+    }
+    if (sp1[2] - sp2[2]) {
+        return sp1[2] - sp2[2]
+    }
+    return sp1[3] - sp1[3];
+}
+
 function computeCSS(element) {
-    var elements = stack.slice().reverse(); // slice默认把数组复制一遍
+    var elements = stack.slice().reverse();
+    if (!element.computedStyle) {
+        element.computedStyle = {};
+    }
+    for (let rule of rules) {
+        var selectorParts = rule.selectors[0].split(" ").reverse();
+        if (!match(element, selectorParts[0])) {
+            continue;
+        }
+
+        var j = 1;
+
+        for (var i = 0; i < elements.length; i++) {
+            if (match(elements[i], selectorParts[j])) {
+                j++;
+            }
+        }
+
+        if (j >= selectorParts.length) {
+            matched = true;
+        }
+
+        if (matched) {
+            var sp = specificity(rule.selectors[0]);
+            var computedStyle = element.computedStyle;
+            for (var declaration of rule.declarations) {
+                if (!computedStyle[declaration.property]) {
+                    computedStyle[declaration.property] = {}
+                }
+                if (!computedStyle[declaration.property].specificity) {
+                    computedStyle[declaration.property].value = declaration.value;
+                    computedStyle[declaration.property].specificity = sp;
+                } else if (compare(computedStyle[declaration.property].specificity, sp) < 0) {
+                    computedStyle[declaration.property].value = declaration.value;
+                    computedStyle[declaration.property].specificity = sp;
+                }
+            }
+        }
+    }
 }
 
 function emit(token) {
-    // console.log(token)
-    /* if(token.type === "text") {
-        return;
-    } */
-    let top = stack[stack.length - 1]
+    let top = stack[stack.length - 1];
     if (token.type == "startTag") {
         let element = {
             type: "element",
@@ -37,11 +118,11 @@ function emit(token) {
         element.tagName = token.tagName;
 
         for (let p in token) {
-            if (p != "type" && p != 'tagName') {
+            if (p != "type" && p != "tagName") {
                 element.attributes.push({
                     name: p,
                     value: token[p]
-                })
+                });
             }
         }
 
@@ -49,24 +130,21 @@ function emit(token) {
 
         top.children.push(element);
 
-        element.parent = top;
-        console.log(token.isSelfClosing)
         if (!token.isSelfClosing) {
             stack.push(element);
         }
-
-        currentTextNode = null
+        currentTextNode = null;
     } else if (token.type == "endTag") {
-        console.log(top.tagName, token.tagName)
         if (top.tagName != token.tagName) {
-            throw new Error('Tag start end do not match!');
+            throw new Error("Tag staet end doesn't match!")
         } else {
-            if (top.tagName === 'style') {
+            //+++++++++++++遇到style标签时，执行添加css规则的操作++++++++++++++//
+            if (top.tagName === "style") {
                 addCSSRules(top.children[0].content);
             }
             stack.pop();
         }
-        currentTextNode = null
+        currentTextNode = null;
     } else if (token.type == "text") {
         if (currentTextNode == null) {
             currentTextNode = {
@@ -79,10 +157,12 @@ function emit(token) {
     }
 }
 
+const EOF = Symbol("EOF");//EOF:End Of File
+
 function data(c) {
-    if (c === "<") {
+    if (c == "<") {
         return tagOpen;
-    } else if (c === EOF) {
+    } else if (c == EOF) {
         emit({
             type: "EOF"
         });
@@ -97,7 +177,7 @@ function data(c) {
 }
 
 function tagOpen(c) {
-    if (c === '/') {
+    if (c == "/") {
         return endTagOpen;
     } else if (c.match(/^[a-zA-Z]$/)) {
         currentToken = {
@@ -116,23 +196,23 @@ function endTagOpen(c) {
             type: "endTag",
             tagName: ""
         }
-        return tagName(c)
-    } else if (c == '>') {
-        // throw err
+        return tagName(c);
+    } else if (c == ">") {
+
+    } else if (c == EOF) {
+
     } else {
-        // throw err
+
     }
 }
 
 function tagName(c) {
-    // console.log(c)
     if (c.match(/^[\t\n\f ]$/)) {
         return beforeAttributeName;
-    } else if (c == '/') {
+    } else if (c == "/") {
         return selfClosingStartTag;
     } else if (c.match(/^[a-zA-Z]$/)) {
-        currentToken.tagName += c //toLowerCase
-        // console.log(currentToken)
+        currentToken.tagName += c//.toLowerCase;
         return tagName;
     } else if (c == ">") {
         emit(currentToken);
@@ -145,12 +225,10 @@ function tagName(c) {
 function beforeAttributeName(c) {
     if (c.match(/^[\t\n\f ]$/)) {
         return beforeAttributeName;
-    } else if (c == ">" || c == '/' || c == EOF) {
-        // emit(currentToken)
+    } else if (c == "/" || c == ">" || c == EOF) {
         return afterAttributeName(c);
-    } else if (c == '=') {
-        console.log('=', currentToken)
-        // return attributes;
+    } else if (c == "=") {
+
     } else {
         currentAttribute = {
             name: "",
@@ -161,14 +239,13 @@ function beforeAttributeName(c) {
 }
 
 function attributeName(c) {
-    console.log('attributes', c)
-    if (c.match(/^[\t\n\f ]$/) || c == '/' || c == '>' || c == EOF) {
-        return afterAttributeName(c)
+    if (c.match(/^[\t\n\f ]$/) || c == "/" || c == ">" || c === EOF) {
+        return afterAttributeName(c);
     } else if (c == "=") {
         return beforeAttributeValue;
-    } else if (c == '\u0000') {
+    } else if (c === "\u0000") {
 
-    } else if (c == "\"" || c == "'" || c == "<") {
+    } else if (c == "\"" || c == "'" || c == " < ") {
 
     } else {
         currentAttribute.name += c;
@@ -176,48 +253,39 @@ function attributeName(c) {
     }
 }
 
-function afterAttributeName(c) {
-    if (c.match(/^[\t\n\f ]$/)) {
-        return afterAttributeName(c);
-    } else if (c === "/") {
-        return selfClosingStartTag;
-    } else if (c === "=") {
-        return beforeAttributeValue;
-    } else if (c === ">") {
-        currentToken[currentAttribute.name] = currentAttribute.value;
-        emit(currentToken);
-        return data;
-    } else if (c === EOF) {
-
-    } else {
-        currentToken[currentAttribute.name] = currentAttribute.value;
-        currentAttribute = {
-            name: "",
-            value: "",
-        }
-        return attributeName(c);
-    }
-}
-
 function beforeAttributeValue(c) {
-    if (c.match(/^[/t/n/f ]$/) || c == '/' || c == ">" || c == EOF) {
+    if (c.match(/^[\t\n\f ]$/) || c == "/" || c == ">" || c == EOF) {
         return beforeAttributeValue;
     } else if (c == "\"") {
         return doubleQuotedAttributeValue;
     } else if (c == "\'") {
         return singleQuotedAttributeValue;
     } else if (c == ">") {
-        // return data
+        // return data;
     } else {
-        return UnquotedAttributeValue(c)
+        return UnquotedAttributeValue(c);
     }
 }
 
 function doubleQuotedAttributeValue(c) {
     if (c == "\"") {
-        currentToken[currentAttribute.name] = currentAttribute.value
+        currentToken[currentAttribute.name] = currentAttribute.value;
         return afterQuotedAttributeValue;
-    } else if (c === "\u0000") {
+    } else if (c == "\u0000") {
+
+    } else if (c == EOF) {
+
+    } else {
+        currentAttribute.value += c;
+        return doubleQuotedAttributeValue;
+    }
+}
+
+function singleQuotedAttributeValue(c) {
+    if (c == "\'") {
+        currentToken[currentAttribute.name] = currentAttribute.value;
+        return afterQuotedAttributeValue;
+    } else if (c == "\u0000") {
 
     } else if (c == EOF) {
 
@@ -227,34 +295,20 @@ function doubleQuotedAttributeValue(c) {
     }
 }
 
-function singleQuotedAttributeValue(c) {
-    if (c == "\'") {
-        currentToken[currentAttribute.name] = currentAttribute.value
-        return afterQuotedAttributeValue;
-    } else if (c == "\u0000") {
-
-    } else if (c === 'EOF') {
-
-    } else {
-        currentAttribute.value += c;
-        return doubleQuotedAttributeValue
-    }
-}
-
 function afterQuotedAttributeValue(c) {
-    if (c.match(/^[\t\f\n ]$/)) {
+    if (c.match(/^[\t\n\f ]$/)) {
         return beforeAttributeName;
     } else if (c == "/") {
         return selfClosingStartTag;
     } else if (c == ">") {
         currentToken[currentAttribute.name] = currentAttribute.value;
-        emit(currentToken)
-        return data
-    } else if (c === EOF) {
+        emit(currentToken);
+        return data;
+    } else if (c == EOF) {
 
     } else {
         currentAttribute.value += c;
-        return doubleQuotedAttributeValue
+        return doubleQuotedAttributeValue;
     }
 }
 
@@ -268,7 +322,7 @@ function UnquotedAttributeValue(c) {
     } else if (c == ">") {
         currentToken[currentAttribute.name] = currentAttribute.value;
         emit(currentToken);
-        return data
+        return data;
     } else if (c == "\u0000") {
 
     } else if (c == "\"" || c == "'" || c == "<" || c == "=" || c == "`") {
@@ -276,17 +330,39 @@ function UnquotedAttributeValue(c) {
     } else if (c == EOF) {
 
     } else {
-        currentAttribute.value += c
+        currentAttribute.value += c;
         return UnquotedAttributeValue
     }
 }
 
-function selfClosingStartTag(c) {
-    if (c == '>') {
-        currentToken.isSelfClosing = true;
-        emit(currentToken)
-        return data
+function afterAttributeName(c) {
+    if (c.match(/^[\t\n\f ]$/)) {
+        return afterAttributeName;
+    } else if (c == "/") {
+        return selfClosingStartTag
+    } else if (c == "=") {
+        return beforeAttributeValue;
+    } else if (c == ">") {
+        currentToken[currentAttribute.name] = currentAttribute.value;
+        emit(currentToken);
+        return data;
     } else if (c == EOF) {
+
+    } else {
+        currentToken[currentAttribute.name] = currentAttribute.value;
+        currentAttribute = {
+            name: "",
+            value: ""
+        };
+        return attributeName(c);
+    }
+}
+
+function selfClosingStartTag(c) {
+    if (c == ">") {
+        currentToken.isSelfClosing = true;
+        return data;
+    } else if (c == "EOF") {
 
     } else {
 
@@ -298,5 +374,6 @@ module.exports.parseHTML = function parseHTML(html) {
     for (let c of html) {
         state = state(c);
     }
-    state = state(EOF)
+    state = state(EOF);
+    return stack[0];
 }
