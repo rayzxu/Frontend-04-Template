@@ -1,31 +1,30 @@
-const css = require('css');
-
 let currentToken = null;
 let currentAttribute = null;
-
-let stack = [{ type: "document", children: [] }]
+let stack = [{type: "document", children:[]}]
 let currentTextNode = null;
 
-//加入一个新的函数，addCSSRules，这里我们把css规则暂存到一个数组里
 let rules = [];
-function addCSSRules(text) {
-    var ast = css.parse(text);
+function addCSSRules(text){
+    let ast = css.parse(text);
     rules.push(...ast.stylesheet.rules);
 }
-
-function match(element, selector) {
+function match(element, selector){
     if (!selector || !element.attributes) {
         return false;
     }
 
     if (selector.charAt(0) == "#") {
-        var attr = element.attributes.filter(attr => attr.name === "id")[0];
-        if (attr && attr.value === selector.replace("#", '')) {
+        let attr = element.attributes.filter((attr) => {
+            return attr.name === "id";
+        })[0];
+        if (attr && attr.value === selector.replace("#", "")){
             return true;
         }
     } else if (selector.charAt(0) == ".") {
-        var attr = element.attributes.filter(attr => attr.name === "class")[0];
-        if (attr && attr.value === selector.replace(".", '')) {
+        let attr = element.attributes.filter((attr) => {
+            return attr.name === "class";
+        })[0];
+        if (attr && attr.value === selector.replace(".", "")){
             return true;
         }
     } else {
@@ -33,13 +32,14 @@ function match(element, selector) {
             return true;
         }
     }
-    return false;
+
+    return false
 }
 
 function specificity(selector) {
-    var p = [0, 0, 0, 0];
-    var selectorParts = selector.split(" ");
-    for (var part of selectorParts) {
+    let p = [0, 0, 0, 0];
+    let selectorParts = selector.split(" ");
+    for (let part of selectorParts) {
         if (part.charAt(0) == "#") {
             p[1] += 1;
         } else if (part.charAt(0) == ".") {
@@ -50,34 +50,34 @@ function specificity(selector) {
     }
     return p;
 }
-
 function compare(sp1, sp2) {
     if (sp1[0] - sp2[0]) {
-        return sp1[0] - sp2[0]
+        return sp1[0] - sp2[0];
     }
     if (sp1[1] - sp2[1]) {
-        return sp1[1] - sp2[1]
+        return sp1[1] - sp2[1];
     }
     if (sp1[2] - sp2[2]) {
-        return sp1[2] - sp2[2]
+        return sp1[2] - sp2[2];
     }
-    return sp1[3] - sp1[3];
+    return sp1[3] - sp2[3];
 }
+function computeCSS(element){
+    let elements = stack.slice().reverse();
 
-function computeCSS(element) {
-    var elements = stack.slice().reverse();
     if (!element.computedStyle) {
         element.computedStyle = {};
     }
+
     for (let rule of rules) {
-        var selectorParts = rule.selectors[0].split(" ").reverse();
+        let selectorParts = rule.selectors[0].split(" ").reverse();
         if (!match(element, selectorParts[0])) {
             continue;
         }
 
-        var j = 1;
-
-        for (var i = 0; i < elements.length; i++) {
+        let matched = false;
+        let j = 1;
+        for(let i=0; i<elements.length;i++){
             if (match(elements[i], selectorParts[j])) {
                 j++;
             }
@@ -88,12 +88,13 @@ function computeCSS(element) {
         }
 
         if (matched) {
-            var sp = specificity(rule.selectors[0]);
-            var computedStyle = element.computedStyle;
-            for (var declaration of rule.declarations) {
+            let sp = specificity(rule.selectors[0]);
+            let computedStyle = element.computedStyle;
+            for (declaration of rule.declarations) {
                 if (!computedStyle[declaration.property]) {
-                    computedStyle[declaration.property] = {}
+                    computedStyle[declaration.property] = {};
                 }
+
                 if (!computedStyle[declaration.property].specificity) {
                     computedStyle[declaration.property].value = declaration.value;
                     computedStyle[declaration.property].specificity = sp;
@@ -105,9 +106,9 @@ function computeCSS(element) {
         }
     }
 }
-
 function emit(token) {
     let top = stack[stack.length - 1];
+
     if (token.type == "startTag") {
         let element = {
             type: "element",
@@ -129,19 +130,20 @@ function emit(token) {
         computeCSS(element);
 
         top.children.push(element);
-
+        element.parent = top;
         if (!token.isSelfClosing) {
             stack.push(element);
         }
+
         currentTextNode = null;
     } else if (token.type == "endTag") {
         if (top.tagName != token.tagName) {
-            throw new Error("Tag staet end doesn't match!")
+            throw new Error("Tag start end does not match!");
         } else {
-            //+++++++++++++遇到style标签时，执行添加css规则的操作++++++++++++++//
-            if (top.tagName === "style") {
+            if (top.tagName == "style") {
                 addCSSRules(top.children[0].content);
             }
+            layout(top)
             stack.pop();
         }
         currentTextNode = null;
@@ -150,15 +152,18 @@ function emit(token) {
             currentTextNode = {
                 type: "text",
                 content: ""
-            }
+            };
             top.children.push(currentTextNode);
         }
+
         currentTextNode.content += token.content;
+
     }
 }
 
-const EOF = Symbol("EOF");//EOF:End Of File
-
+const css = require('css');
+const EOF = Symbol("EOF");
+const layout = require('./layout.js');
 function data(c) {
     if (c == "<") {
         return tagOpen;
@@ -166,7 +171,7 @@ function data(c) {
         emit({
             type: "EOF"
         });
-        return;
+        return ;
     } else {
         emit({
             type: "text",
@@ -186,10 +191,13 @@ function tagOpen(c) {
         }
         return tagName(c);
     } else {
-        return;
+        emit({
+            type: "text",
+            content: c
+        });
+        return ;
     }
 }
-
 function endTagOpen(c) {
     if (c.match(/^[a-zA-Z]$/)) {
         currentToken = {
@@ -198,37 +206,36 @@ function endTagOpen(c) {
         }
         return tagName(c);
     } else if (c == ">") {
-
+        
     } else if (c == EOF) {
 
     } else {
 
     }
 }
-
 function tagName(c) {
     if (c.match(/^[\t\n\f ]$/)) {
         return beforeAttributeName;
     } else if (c == "/") {
         return selfClosingStartTag;
     } else if (c.match(/^[a-zA-Z]$/)) {
-        currentToken.tagName += c//.toLowerCase;
+        currentToken.tagName += c;
         return tagName;
     } else if (c == ">") {
         emit(currentToken);
         return data;
     } else {
+        currentToken.tagName += c;
         return tagName;
     }
 }
-
 function beforeAttributeName(c) {
     if (c.match(/^[\t\n\f ]$/)) {
         return beforeAttributeName;
     } else if (c == "/" || c == ">" || c == EOF) {
         return afterAttributeName(c);
     } else if (c == "=") {
-
+       
     } else {
         currentAttribute = {
             name: "",
@@ -237,22 +244,20 @@ function beforeAttributeName(c) {
         return attributeName(c);
     }
 }
-
 function attributeName(c) {
-    if (c.match(/^[\t\n\f ]$/) || c == "/" || c == ">" || c === EOF) {
+    if (c.match(/^[\t\n\f ]$/) || c == "/" || c == ">" || c == EOF) {
         return afterAttributeName(c);
     } else if (c == "=") {
         return beforeAttributeValue;
-    } else if (c === "\u0000") {
+    } else if (c == "\u0000") {
 
-    } else if (c == "\"" || c == "'" || c == " < ") {
-
+    } else if (c == "\"" || c == "'" || c == "<") {
+        // return afterAttributeName(c);
     } else {
         currentAttribute.name += c;
         return attributeName;
     }
 }
-
 function beforeAttributeValue(c) {
     if (c.match(/^[\t\n\f ]$/) || c == "/" || c == ">" || c == EOF) {
         return beforeAttributeValue;
@@ -261,12 +266,11 @@ function beforeAttributeValue(c) {
     } else if (c == "\'") {
         return singleQuotedAttributeValue;
     } else if (c == ">") {
-        // return data;
+        
     } else {
         return UnquotedAttributeValue(c);
     }
 }
-
 function doubleQuotedAttributeValue(c) {
     if (c == "\"") {
         currentToken[currentAttribute.name] = currentAttribute.value;
@@ -280,7 +284,6 @@ function doubleQuotedAttributeValue(c) {
         return doubleQuotedAttributeValue;
     }
 }
-
 function singleQuotedAttributeValue(c) {
     if (c == "\'") {
         currentToken[currentAttribute.name] = currentAttribute.value;
@@ -291,27 +294,9 @@ function singleQuotedAttributeValue(c) {
 
     } else {
         currentAttribute.value += c;
-        return doubleQuotedAttributeValue
+        return singleQuotedAttributeValue;
     }
 }
-
-function afterQuotedAttributeValue(c) {
-    if (c.match(/^[\t\n\f ]$/)) {
-        return beforeAttributeName;
-    } else if (c == "/") {
-        return selfClosingStartTag;
-    } else if (c == ">") {
-        currentToken[currentAttribute.name] = currentAttribute.value;
-        emit(currentToken);
-        return data;
-    } else if (c == EOF) {
-
-    } else {
-        currentAttribute.value += c;
-        return doubleQuotedAttributeValue;
-    }
-}
-
 function UnquotedAttributeValue(c) {
     if (c.match(/^[\t\n\f ]$/)) {
         currentToken[currentAttribute.name] = currentAttribute.value;
@@ -328,18 +313,33 @@ function UnquotedAttributeValue(c) {
     } else if (c == "\"" || c == "'" || c == "<" || c == "=" || c == "`") {
 
     } else if (c == EOF) {
-
+        
     } else {
         currentAttribute.value += c;
-        return UnquotedAttributeValue
+        return UnquotedAttributeValue;
     }
 }
-
+function afterQuotedAttributeValue(c) {
+    if (c.match(/^[\t\n\f ]$/)) {
+        return beforeAttributeName;
+    } else if (c == "/") {
+        return selfClosingStartTag;
+    } else if (c == ">") {
+        currentToken[currentAttribute.name] = currentAttribute.value;
+        emit(currentToken);
+        return data;
+    } else if (c == EOF) {
+        
+    } else {
+        currentAttribute.value += c;
+        return doubleQuotedAttributeValue;
+    }
+}
 function afterAttributeName(c) {
     if (c.match(/^[\t\n\f ]$/)) {
         return afterAttributeName;
     } else if (c == "/") {
-        return selfClosingStartTag
+        return selfClosingStartTag;
     } else if (c == "=") {
         return beforeAttributeValue;
     } else if (c == ">") {
@@ -347,7 +347,7 @@ function afterAttributeName(c) {
         emit(currentToken);
         return data;
     } else if (c == EOF) {
-
+        
     } else {
         currentToken[currentAttribute.name] = currentAttribute.value;
         currentAttribute = {
@@ -357,18 +357,17 @@ function afterAttributeName(c) {
         return attributeName(c);
     }
 }
-
 function selfClosingStartTag(c) {
     if (c == ">") {
         currentToken.isSelfClosing = true;
+        emit(currentToken);
         return data;
-    } else if (c == "EOF") {
+    } else if (c == EOF) {
 
     } else {
 
     }
 }
-
 module.exports.parseHTML = function parseHTML(html) {
     let state = data;
     for (let c of html) {

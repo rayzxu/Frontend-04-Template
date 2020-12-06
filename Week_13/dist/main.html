@@ -1,0 +1,30 @@
+<head>
+    <style>
+        .carousel {
+            overflow: hidden;
+            width: 500px;
+            height: 300px;
+            white-space: nowrap;
+        }
+        .carousel>div {
+            width: 500px;
+            height: 300px;
+            display: inline-block;
+            background-size: contain;
+            transition: ease 0.5s;
+        }
+        button {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="el2" style="width:100px;height: 100px; background-color: royalblue"></div>
+    <div id="el" style="width:100px;height: 100px; background-color: indigo"></div>
+    <div style="display: flex; align-items: center;">
+        <button id="start">START</button>
+        <button id="pause">PAUSE</button>
+        <button id="resume">RESUME</button>
+    </div>
+    <script type="module" src="./main.js"></script>
+</body>

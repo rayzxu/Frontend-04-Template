@@ -1,5 +1,7 @@
-const net = require("net")
-const parser = require('./parser.js')
+const net = require("net");
+const parser = require('./parser.js');
+const render = require('./render.js');
+const images = require('images');
 
 class Request {
     constructor(options) {
@@ -40,7 +42,7 @@ class Request {
                 }
             });
             connection.on('error', (err) => {
-                console.log('err', err)
+                // console.log('err', err)
                 connection.end();
                 reject(err);
             })
@@ -198,4 +200,11 @@ void async function() {
     });
     let response = await request.send();
     let dom = parser.parseHTML(response.body)
+
+    // console.log(dom.children[0].children[3].children[1].children[1])
+    let viewport = images(800, 600)
+
+    render(viewport, dom)
+
+    viewport.save('viewport.jpg')
 }();
