@@ -1,7 +1,7 @@
 import {Component, STATE, ATTRIBUTE} from './framework.js'
 import { enableGesture } from './gesture.js'
 import { Timeline, Animation } from './animation.js'
-import { ease, easeIn, easeInOut, easeOut } from './ease';
+import { ease, easeIn, easeInOut, easeOut } from './ease.js';
 
 export { STATE, ATTRIBUTE } from './framework.js'
 
