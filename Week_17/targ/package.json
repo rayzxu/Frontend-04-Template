@@ -1,0 +1,27 @@
+{
+  "scripts": {
+    "build": "webpack --config webpack.config.js",
+    "test": "mocha --require @babel/register",
+    "coverage": "nyc mocha"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
+    "@babel/register": "^7.12.10",
+    "@istanbuljs/nyc-config-babel": "^3.0.0",
+    "babel-loader": "^8.2.2",
+    "babel-plugin-istanbul": "^6.0.0",
+    "css-loader": "^5.0.1",
+    "html-webpack-plugin": "^4.5.0",
+    "mocha": "^8.2.1",
+    "nyc": "^15.1.0",
+    "vue-loader": "^15.9.6",
+    "vue-style-loader": "^4.1.2",
+    "vue-template-compiler": "^2.6.12",
+    "webpack": "^5.11.1",
+    "webpack-cli": "^4.3.1"
+  },
+  "dependencies": {
+    "vue": "^2.6.12"
+  }
+}
