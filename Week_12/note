@@ -1,0 +1,17 @@
+js 中处理帧的方案
+一帧60毫秒
+
+setInterval(() => {
+
+}, 16)
+
+let tick = () => {
+    setTimeout(tick, 16)
+}
+
+let tick = () => {
+    requestAnimationFrame(tick) //申请浏览器执行下一帧的时候执行tick代码
+}
+
+// setInterval方案可能会产生积压、不论interval是否执行完毕都会放进interval队列中
+
