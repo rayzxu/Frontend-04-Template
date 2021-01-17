@@ -8,8 +8,20 @@
 
 ### 标签的语义
 
+- 开发者友好：增强可读性、写css结构清晰、便于维护
+- 搜索引擎友好：让搜索引擎爬虫更好地获取到更多有效信息，有效提升网页的搜索量（伪）
 
-article、main、aside、abbr、strong、em、p、h1、nav、ol、figure
+#### 作为自然语言延伸的语义类标签
+
+em、string ...
+
+#### 作为标题摘要的语义类标签
+
+h1 - h6、hgroup、section ... 
+
+#### 作为整体结构的语义类标签
+
+article、main、aside、footer ...
 
 ### 语法
 
@@ -40,25 +52,30 @@ article、main、aside、abbr、strong、em、p、h1、nav、ol、figure
 ### 事件 API
 
 - 冒泡和捕获是浏览器处理事件的一个过程，先捕获再冒泡
-  - 捕获：计算事件是发生在哪个元素
-  - 冒泡：元素一层层向外响应事件
+  - 捕获：计算事件是发生在哪个元素（机器识别元素）
+  - 冒泡：元素一层层向外响应事件（触发人类写的事件）
 
 ### DOM API
+1. 节点：DOM 树形结构中的节点相关 API。
+2. 事件：触发和监听事件相关 API。
+3. Range：操作文字范围相关 API。
+4. 遍历：遍历 DOM 需要的 API。
+
+#### 节点
+
+- Node
+    - Element: 元素型节点和标签相对应
+    - Document：文档节点
+    - CharacterData：
+        - Text：文本节点
+        - Comment：注释
+        - ProcessingInstruction：处理信息
+    - DocumentFragment：文档片段
+    - DocumentType： 文档类型
 
 #### Node API
 
-- Node
-  - Element
-    - HTMLElement
-    - SVGElement
-  - Document
-  - CharacterData
-    - Text
-    - Comment
-    - ProcessingInstruction
-  - DocumentFragment
-  - DocumentType
-- 导航类操作
+- 标示Node之间的关系
   - parentNode
   - childNodes
   - firstChild
@@ -71,17 +88,43 @@ article、main、aside、abbr、strong、em、p、h1、nav、ol、figure
   - lastElementChild
   - nextElementSibling
   - previousElementSibling
-- 修改操作
+- 操作Dom树
   - appendChild
   - insertBefore
   - removeChild
   - replaceChild
-- 高级操作
-  - compareDocumentPosition
-  - contains
-  - isEqualNode
-  - isSameNode (===)
-  - cloneNode
+- 创建特定节点
+  - createElement
+  - createTextNode
+  - createCDATASection
+  - createComment
+  - createProcessingInstruction
+  - createDocumentFragment
+  - createDocumentType
+- 操作属性
+  - getAttribute
+  - setAttribute
+  - removeAttribute
+  - hasAttribute
+  - getAttributeNode
+  - setAttributeNode
+  - attributes对象： 比如 document.body.attributes.class = “a” 等效于 document.body.setAttribute(“class”, “a”)。
+- 查找元素
+  - querySelector
+  - querySelectorAll
+  - getElementById
+  - getElementsByName
+  - getElementsByTagName
+  - getElementsByClassName
+- 高级API
+  - compareDocumentPosition 是一个用于比较两个节点中关系的函数。
+  - contains 检查一个节点是否包含另一个节点的函数。
+  - isEqualNode 检查两个节点是否完全相同。
+  - isSameNode (===) 检查两个节点是否是同一个节点，实际上在 JavaScript 中可以用“===”。
+  - cloneNode 复制一个节点，如果传入参数 true，则会连同子元素做深拷贝。
+- 遍历
+  - NodeIterator
+  - TreeWalker
 
 #### Range API
 
