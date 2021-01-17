@@ -2,7 +2,7 @@
 
 ### HTML 的定义
 
-- XML、SGML
+- XML、SGML超集
 - HTML 中的字符字体
   - HTML 中，一些字符是预留的，必须使用字符实体才能显示，直接使用可能会报错
 
@@ -170,10 +170,12 @@ range.insertNode(document.createTextNode("a"));
 
 ### Window API
 
-- `window.open("about:blank", "_blank", "width-100,height:100");`
+- open
 - moveTo(x, y)
 - moveBy(x, y)
 - resizeBy(x, y)
+- location
+- click
 
 ### scroll
 
